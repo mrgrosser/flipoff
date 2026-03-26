@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { StateStore } from './stateStore.mjs';
 import { fetchWeatherBoard } from './weather.mjs';
+import { getQuote } from './quotes.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -78,7 +79,30 @@ async function currentBoardState() {
     const lines = await fetchWeatherBoard(state.weatherCity || 'Minneapolis');
     return { lines, active: selected.id, state };
   }
+  if (selected.type === 'motd') {
+    const motdText = state.motd ? state.motd.trim() : getQuote();
+    const lines = wrapText(motdText, 20);
+    return { lines, active: selected.id, state };
+  }
   return { lines: selected.lines || ['', '', '', '', ''], active: selected.id, state };
+}
+
+function wrapText(text, maxChars) {
+  const words = text.split(' ');
+  const lines = ['', '', '', '', ''];
+  let lineIdx = 0;
+  for (const word of words) {
+    if (lineIdx >= 5) break;
+    if (!lines[lineIdx]) {
+      lines[lineIdx] = word;
+    } else if (lines[lineIdx].length + 1 + word.length <= maxChars) {
+      lines[lineIdx] += ' ' + word;
+    } else {
+      lineIdx++;
+      if (lineIdx < 5) lines[lineIdx] = word;
+    }
+  }
+  return lines;
 }
 
 http.createServer(async (req, res) => {

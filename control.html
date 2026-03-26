@@ -33,6 +33,8 @@
       </select>
       <label for="weatherCity">Weather city</label>
       <input id="weatherCity" placeholder="Minneapolis">
+      <label for="motd">Message of the Day (empty = quote rotation)</label>
+      <input id="motd" placeholder="Custom MOTD — leave blank for daily quote">
       <button id="saveGlobal">Save Global Settings</button>
     </div>
     <div class="panel">
@@ -52,6 +54,7 @@
     const entriesEl = document.getElementById('entries');
     const modeEl = document.getElementById('mode');
     const weatherCityEl = document.getElementById('weatherCity');
+    const motdEl = document.getElementById('motd');
 
     function linesEditor(entry, idx){
       const lines = Array.isArray(entry.lines) ? entry.lines : ['', '', '', '', ''];
@@ -61,6 +64,7 @@
           <label>Type</label>
           <select class="type">
             <option value="message" ${entry.type==='message'?'selected':''}>Message</option>
+            <option value="motd" ${entry.type==='motd'?'selected':''}>MOTD / Quote</option>
             <option value="weather" ${entry.type==='weather'?'selected':''}>Weather</option>
           </select>
           <label>Duration (seconds)</label><input class="duration" type="number" min="5" value="${entry.durationSec || 15}">
@@ -75,7 +79,7 @@
       document.querySelectorAll('.schedule-item').forEach((item)=>{
         const typeEl = item.querySelector('.type');
         const fields = item.querySelector('.message-fields');
-        typeEl.addEventListener('change',()=>{fields.style.display = typeEl.value === 'weather' ? 'none' : 'block';});
+        typeEl.addEventListener('change',()=>{fields.style.display = typeEl.value === 'weather' || typeEl.value === 'motd' ? 'none' : 'block';});
       });
     }
 
@@ -84,12 +88,13 @@
       const state = await res.json();
       modeEl.value = state.mode || 'schedule';
       weatherCityEl.value = state.weatherCity || 'Minneapolis';
+      motdEl.value = state.motd || '';
       entriesEl.innerHTML = (state.schedules || []).map(linesEditor).join('');
       bindVisibility();
     }
 
     document.getElementById('saveGlobal').addEventListener('click', async ()=>{
-      const res = await fetch('/api/state', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ mode: modeEl.value, weatherCity: weatherCityEl.value })});
+      const res = await fetch('/api/state', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ mode: modeEl.value, weatherCity: weatherCityEl.value, motd: motdEl.value || null })});
       if(!res.ok) alert('Failed saving global settings');
     });
 

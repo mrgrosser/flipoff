@@ -6,8 +6,9 @@ const STATE_FILE = process.env.STATE_FILE || path.join(process.cwd(), 'data', 's
 const DEFAULT_STATE = {
   mode: 'schedule',
   weatherCity: 'Minneapolis',
+  motd: null,
   schedules: [
-    { id: 'motd', type: 'message', label: 'Message of the Day', enabled: true, durationSec: 18, lines: ['', 'WELCOME HOME', 'BOB', '', ''] },
+    { id: 'motd', type: 'motd', label: 'Message of the Day', enabled: true, durationSec: 18, lines: ['', 'WELCOME HOME', 'BOB', '', ''] },
     { id: 'note', type: 'message', label: 'Note', enabled: true, durationSec: 18, lines: ['', 'HAVE A GREAT', 'DAY', '', ''] },
     { id: 'weather', type: 'weather', label: 'Weather', enabled: true, durationSec: 24 }
   ]
