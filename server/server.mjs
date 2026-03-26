@@ -91,22 +91,21 @@ async function currentBoardState() {
 }
 
 function fetchClockBoard() {
-  // CT is UTC-6 (standard time) or UTC-5 (daylight saving)
   const now = new Date();
-  const offsetMs = now.getTimezoneOffset() * 60000;
-  const ctOffset = offsetMs + (isDST(now) ? -5 : -6) * 3600000;
-  const local = new Date(now.getTime() + ctOffset);
+  const utcH = now.getUTCHours();
+  const y = now.getUTCFullYear();
+  // US DST: second Sunday March (clocks forward) to first Sunday November (back)
+  const dss = new Date(y, 2, 8 + (6 - new Date(y, 2, 1).getDay()) % 7);
+  const dssTime = dss.getTime();
+  const fss = new Date(y, 10, 1 + (6 - new Date(y, 10, 1).getDay()) % 7);
+  const isDST = now.getTime() >= dssTime && now.getTime() < fss.getTime();
+  const ctOffset = isDST ? -5 : -6;
+  const local = new Date(now.getTime() + ctOffset * 3600000);
   const dateStr = local.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).toUpperCase();
-  const timeStr = local.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  const timeParts = timeStr.split(':');
-  return ['', dateStr, timeParts[0] + '  ' + timeParts[1] + '  ' + timeParts[2], '', ''];
-}
-
-function isDST(d) {
-  const jan = new Date(d.getFullYear(), 0, 1);
-  const jul = new Date(d.getFullYear(), 6, 1);
-  const offset = d.getTimezoneOffset();
-  return offset < Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+  const timeStr = local.toLocaleTimeString('en-US', { hour12: true, hour: 'numeric', minute: '2-digit', second: '2-digit' });
+  const [timePart, period] = timeStr.split(' ');
+  const [h, m, s] = timePart.split(':');
+  return ['', dateStr, h + '  ' + m + '  ' + s + '  ' + period, '', ''];
 }
 
 function wrapText(text, maxChars) {
