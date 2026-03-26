@@ -1,0 +1,25 @@
+version: '3.9'
+
+services:
+  flipoff:
+    image: flipoff:latest
+    ports:
+      - target: 8080
+        published: 5180
+        mode: ingress
+    networks:
+      - proxy
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.flipoff.rule=Host(`flipoff.4511home.com`)"
+        - "traefik.http.routers.flipoff.entrypoints=web"
+        - "traefik.http.services.flipoff.loadbalancer.server.port=8080"
+
+networks:
+  proxy:
+    external: true
+    name: mediastack_proxy

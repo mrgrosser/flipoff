@@ -1,24 +1,30 @@
-import { MESSAGES, MESSAGE_INTERVAL, TOTAL_TRANSITION } from './constants.js';
-
 export class MessageRotator {
   constructor(board) {
     this.board = board;
-    this.messages = MESSAGES;
-    this.currentIndex = -1;
     this._timer = null;
     this._paused = false;
+    this.currentState = null;
+  }
+
+  async fetchAndDisplay() {
+    const response = await fetch('/api/state');
+    if (!response.ok) throw new Error(`State fetch failed: ${response.status}`);
+    const state = await response.json();
+    const lines = Array.isArray(state?.lines) ? state.lines : ['', '', '', '', ''];
+    const signature = JSON.stringify(lines);
+    if (this.currentState !== signature) {
+      this.board.displayMessage(lines);
+      this.currentState = signature;
+    }
   }
 
   start() {
-    // Show first message immediately
-    this.next();
-
-    // Begin auto-rotation
+    this.fetchAndDisplay().catch(console.error);
     this._timer = setInterval(() => {
       if (!this._paused && !this.board.isTransitioning) {
-        this.next();
+        this.fetchAndDisplay().catch(console.error);
       }
-    }, MESSAGE_INTERVAL + TOTAL_TRANSITION);
+    }, 2000);
   }
 
   stop() {
@@ -29,26 +35,10 @@ export class MessageRotator {
   }
 
   next() {
-    this.currentIndex = (this.currentIndex + 1) % this.messages.length;
-    this.board.displayMessage(this.messages[this.currentIndex]);
-    this._resetAutoRotation();
+    this.fetchAndDisplay().catch(console.error);
   }
 
   prev() {
-    this.currentIndex = (this.currentIndex - 1 + this.messages.length) % this.messages.length;
-    this.board.displayMessage(this.messages[this.currentIndex]);
-    this._resetAutoRotation();
-  }
-
-  _resetAutoRotation() {
-    // Reset timer when user manually navigates
-    if (this._timer) {
-      clearInterval(this._timer);
-      this._timer = setInterval(() => {
-        if (!this._paused && !this.board.isTransitioning) {
-          this.next();
-        }
-      }, MESSAGE_INTERVAL + TOTAL_TRANSITION);
-    }
+    this.fetchAndDisplay().catch(console.error);
   }
 }

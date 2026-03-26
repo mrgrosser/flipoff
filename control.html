@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlipOff Control</title>
+  <link rel="stylesheet" href="css/reset.css">
+  <style>
+    body{font-family:system-ui,sans-serif;background:#111;color:#eee;padding:24px;max-width:1000px;margin:0 auto}
+    h1,h2{margin:0 0 12px}
+    .grid{display:grid;gap:20px;grid-template-columns:1fr 1fr}
+    .panel{background:#181818;border:1px solid #2a2a2a;border-radius:12px;padding:16px}
+    label{display:block;margin:10px 0 6px;color:#bbb}
+    input,select,textarea,button{width:100%;box-sizing:border-box;background:#222;color:#fff;border:1px solid #333;border-radius:8px;padding:10px;font:inherit}
+    textarea{min-height:72px}
+    button{background:#2563eb;cursor:pointer;margin-top:12px}
+    .schedule-item{border:1px solid #2f2f2f;padding:12px;border-radius:10px;margin-top:12px}
+    .muted{color:#999;font-size:.95rem}
+    @media (max-width: 800px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <h1>FlipOff Control</h1>
+  <p class="muted">Edit messages, weather city, and schedule rotation.</p>
+  <div class="grid">
+    <div class="panel">
+      <h2>Global</h2>
+      <label for="mode">Mode</label>
+      <select id="mode">
+        <option value="schedule">Scheduled rotation</option>
+        <option value="message">Message only</option>
+        <option value="weather">Weather only</option>
+      </select>
+      <label for="weatherCity">Weather city</label>
+      <input id="weatherCity" placeholder="Minneapolis">
+      <button id="saveGlobal">Save Global Settings</button>
+    </div>
+    <div class="panel">
+      <h2>Display</h2>
+      <p><a href="/" target="_blank">Open display</a></p>
+      <p><a href="/api/state" target="_blank">Inspect live API state</a></p>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:20px">
+    <h2>Schedule Entries</h2>
+    <div id="entries"></div>
+    <button id="saveEntries">Save Entries</button>
+  </div>
+
+  <script type="module">
+    const entriesEl = document.getElementById('entries');
+    const modeEl = document.getElementById('mode');
+    const weatherCityEl = document.getElementById('weatherCity');
+
+    function linesEditor(entry, idx){
+      const lines = Array.isArray(entry.lines) ? entry.lines : ['', '', '', '', ''];
+      return `
+        <div class="schedule-item" data-index="${idx}">
+          <label>Label</label><input class="label" value="${entry.label || ''}">
+          <label>Type</label>
+          <select class="type">
+            <option value="message" ${entry.type==='message'?'selected':''}>Message</option>
+            <option value="weather" ${entry.type==='weather'?'selected':''}>Weather</option>
+          </select>
+          <label>Duration (seconds)</label><input class="duration" type="number" min="5" value="${entry.durationSec || 15}">
+          <label><input class="enabled" type="checkbox" ${entry.enabled!==false?'checked':''}> Enabled</label>
+          <div class="message-fields" style="display:${entry.type==='weather'?'none':'block'}">
+            ${lines.map((line,i)=>`<label>Line ${i+1}</label><input class="line" value="${String(line||'').replace(/"/g,'&quot;')}">`).join('')}
+          </div>
+        </div>`;
+    }
+
+    function bindVisibility(){
+      document.querySelectorAll('.schedule-item').forEach((item)=>{
+        const typeEl = item.querySelector('.type');
+        const fields = item.querySelector('.message-fields');
+        typeEl.addEventListener('change',()=>{fields.style.display = typeEl.value === 'weather' ? 'none' : 'block';});
+      });
+    }
+
+    async function load(){
+      const res = await fetch('/api/config');
+      const state = await res.json();
+      modeEl.value = state.mode || 'schedule';
+      weatherCityEl.value = state.weatherCity || 'Minneapolis';
+      entriesEl.innerHTML = (state.schedules || []).map(linesEditor).join('');
+      bindVisibility();
+    }
+
+    document.getElementById('saveGlobal').addEventListener('click', async ()=>{
+      const res = await fetch('/api/state', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ mode: modeEl.value, weatherCity: weatherCityEl.value })});
+      if(!res.ok) alert('Failed saving global settings');
+    });
+
+    document.getElementById('saveEntries').addEventListener('click', async ()=>{
+      const schedules = [...document.querySelectorAll('.schedule-item')].map((item, idx)=>({
+        id: `entry-${idx}`,
+        label: item.querySelector('.label').value,
+        type: item.querySelector('.type').value,
+        durationSec: Number(item.querySelector('.duration').value || 15),
+        enabled: item.querySelector('.enabled').checked,
+        lines: [...item.querySelectorAll('.line')].map((el)=>el.value)
+      }));
+      const res = await fetch('/api/state', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ schedules })});
+      if(!res.ok) alert('Failed saving entries');
+    });
+
+    load();
+  </script>
+</body>
+</html>
