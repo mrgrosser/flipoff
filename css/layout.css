@@ -82,32 +82,51 @@ body {
   padding: 10px 0 30px;
 }
 
-.display-only {
-  overflow: hidden;
-  background: #000;
-  width: 100vw;
+html.display-only {
   height: 100vh;
+  overflow: hidden;
+}
+
+body.display-only {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
 }
 
 .board-only-shell {
   width: 100vw;
   height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
 }
 
-.display-only .board-section,
-.display-only .board-only-shell {
+.display-only .board-section {
   width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .display-only .board {
   width: 100%;
-  height: 100%;
   border-radius: 0;
   box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.display-only .tile-grid {
+  width: max-content;
+  max-width: 100%;
 }
 
 /* Clock Overlay */
