@@ -91,17 +91,22 @@ async function currentBoardState() {
 }
 
 function fetchClockBoard() {
+  // CT is UTC-6 (standard time) or UTC-5 (daylight saving)
   const now = new Date();
-  const dateStr = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).toUpperCase();
-  const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const offsetMs = now.getTimezoneOffset() * 60000;
+  const ctOffset = offsetMs + (isDST(now) ? -5 : -6) * 3600000;
+  const local = new Date(now.getTime() + ctOffset);
+  const dateStr = local.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).toUpperCase();
+  const timeStr = local.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
   const timeParts = timeStr.split(':');
-  return [
-    '',
-    dateStr,
-    timeParts[0] + '  ' + timeParts[1] + '  ' + timeParts[2],
-    '',
-    ''
-  ];
+  return ['', dateStr, timeParts[0] + '  ' + timeParts[1] + '  ' + timeParts[2], '', ''];
+}
+
+function isDST(d) {
+  const jan = new Date(d.getFullYear(), 0, 1);
+  const jul = new Date(d.getFullYear(), 6, 1);
+  const offset = d.getTimezoneOffset();
+  return offset < Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
 }
 
 function wrapText(text, maxChars) {

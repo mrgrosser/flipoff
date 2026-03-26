@@ -2,7 +2,6 @@ import { Board } from './Board.js';
 import { SoundEngine } from './SoundEngine.js';
 import { MessageRotator } from './MessageRotator.js';
 import { KeyboardController } from './KeyboardController.js';
-import { Clock } from './Clock.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const boardContainer = document.getElementById('board-container');
@@ -10,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const board = new Board(boardContainer, soundEngine);
   const rotator = new MessageRotator(board);
   const keyboard = new KeyboardController(rotator, soundEngine);
-  const clock = new Clock(boardContainer);
 
   // Initialize audio on first user interaction (browser autoplay policy)
   let audioInitialized = false;
