@@ -64,6 +64,7 @@
           <label>Type</label>
           <select class="type">
             <option value="message" ${entry.type==='message'?'selected':''}>Message</option>
+            <option value="clock" ${entry.type==='clock'?'selected':''}>Clock</option>
             <option value="motd" ${entry.type==='motd'?'selected':''}>MOTD / Quote</option>
             <option value="weather" ${entry.type==='weather'?'selected':''}>Weather</option>
           </select>
@@ -79,7 +80,7 @@
       document.querySelectorAll('.schedule-item').forEach((item)=>{
         const typeEl = item.querySelector('.type');
         const fields = item.querySelector('.message-fields');
-        typeEl.addEventListener('change',()=>{fields.style.display = typeEl.value === 'weather' || typeEl.value === 'motd' ? 'none' : 'block';});
+        typeEl.addEventListener('change',()=>{fields.style.display = typeEl.value === 'weather' || typeEl.value === 'motd' || typeEl.value === 'clock' ? 'none' : 'block';});
       });
     }
 

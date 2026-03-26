@@ -84,7 +84,24 @@ async function currentBoardState() {
     const lines = wrapText(motdText, 20);
     return { lines, active: selected.id, state };
   }
+  if (selected.type === 'clock') {
+    return { lines: fetchClockBoard(), active: selected.id, state };
+  }
   return { lines: selected.lines || ['', '', '', '', ''], active: selected.id, state };
+}
+
+function fetchClockBoard() {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).toUpperCase();
+  const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const timeParts = timeStr.split(':');
+  return [
+    '',
+    dateStr,
+    timeParts[0] + '  ' + timeParts[1] + '  ' + timeParts[2],
+    '',
+    ''
+  ];
 }
 
 function wrapText(text, maxChars) {

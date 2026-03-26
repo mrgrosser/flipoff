@@ -8,6 +8,7 @@ const DEFAULT_STATE = {
   weatherCity: 'Minneapolis',
   motd: null,
   schedules: [
+    { id: 'clock', type: 'clock', label: 'Clock', enabled: true, durationSec: 15 },
     { id: 'motd', type: 'motd', label: 'Message of the Day', enabled: true, durationSec: 18, lines: ['', 'WELCOME HOME', 'BOB', '', ''] },
     { id: 'note', type: 'message', label: 'Note', enabled: true, durationSec: 18, lines: ['', 'HAVE A GREAT', 'DAY', '', ''] },
     { id: 'weather', type: 'weather', label: 'Weather', enabled: true, durationSec: 24 }
