@@ -73,6 +73,29 @@ export class Board {
 
     containerEl.appendChild(this.boardEl);
     this._updateAccentColors();
+    this._resizeObserver = new ResizeObserver(() => this._autoResize());
+    this._resizeObserver.observe(document.body);
+    this._autoResize();
+  }
+
+  _autoResize() {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const padX = 64;
+    const padY = 120;
+    const availW = vw - padX;
+    const availH = vh - padY;
+    const maxByWidth = Math.floor(availW / this.cols);
+    const maxByHeight = Math.floor(availH / this.rows);
+    const tile = Math.min(maxByWidth, maxByHeight, 80);
+    const size = Math.max(tile, 28);
+    const fontSize = Math.round(size * 0.62);
+    document.documentElement.style.setProperty('--tile-size', size + 'px');
+    document.documentElement.style.setProperty('--tile-font-size', fontSize + 'px');
+  }
+
+  destroy() {
+    if (this._resizeObserver) this._resizeObserver.disconnect();
   }
 
   _createAccentBar(extraClass) {

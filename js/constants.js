@@ -1,3 +1,4 @@
+export const DEFAULT_TILE_SIZE = 60;
 export const GRID_COLS = 22;
 export const GRID_ROWS = 5;
 
